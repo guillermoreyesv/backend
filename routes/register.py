@@ -1,11 +1,10 @@
 from fastapi import APIRouter, status
-from fastapi.responses import JSONResponse, Response as Resp
-from pydantic import BaseModel, EmailStr, Field
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr
+
 from models.user import User
 from config.mysql import MySQLDBSingleton
-from sqlalchemy.orm import Session
-import json
-
 
 router = APIRouter()
 class UserAPI(BaseModel):
