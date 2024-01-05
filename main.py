@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from routes import register
 import os
 
 app = FastAPI(
@@ -10,6 +11,8 @@ app = FastAPI(
 )
 
 version = "/v1"
+app.include_router(register.router, prefix=version+"/register", tags=["register"])
+
 
 if __name__ == "__main__":
     import uvicorn
