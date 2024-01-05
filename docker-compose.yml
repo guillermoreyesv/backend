@@ -1,0 +1,27 @@
+#Development
+version: '3'
+
+services:
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - FASTAPI_HOST=0.0.0.0
+      - FASTAPI_PORT=8001
+    volumes:
+      - ./app:/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: finvero
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
