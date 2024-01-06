@@ -41,6 +41,5 @@ def register_new_user(user: UserAPI):
 
 def hash_password(password: str):
     from config.passwords import PasswordManager
-    password_manager = PasswordManager()
-    password = password_manager.hash_password(password)
+    password = PasswordManager().hash_password(password)
     return password

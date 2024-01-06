@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import register
+from routes import register, login
 import os
 
 app = FastAPI(
@@ -12,6 +12,7 @@ app = FastAPI(
 
 version = "/v1"
 app.include_router(register.router, prefix=version+"/register", tags=["register"])
+app.include_router(login.router, prefix=version+"/login", tags=["login"])
 
 
 if __name__ == "__main__":
