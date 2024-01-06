@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr
 from models.user import User
 from config.mysql import MySQLDBSingleton
 from config.passwords import PasswordManager
+from config import tokens
 
 router = APIRouter()
 class UserAPI(BaseModel):
@@ -30,8 +31,11 @@ def login(user: UserAPI):
             payload = {
                 "id": str(result.id)
             }
+            session.commit()
 
-            return JSONResponse(status_code=status.HTTP_200_OK, content=payload)
+            token = tokens.encode(payload)
+            response = {"token": token}
+            return JSONResponse(status_code=status.HTTP_200_OK, content=response)
             
     except Exception as e:
         print(e)
