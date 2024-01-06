@@ -11,3 +11,14 @@ def encode(payload: dict):
     payload['expire'] = str(expire)
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
+
+def decode(token: str):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+    expire_str = payload.get('expire')
+    
+    if expire_str:
+        expire = datetime.datetime.strptime(expire_str, '%Y-%m-%d %H:%M:%S.%f')
+        
+        if expire <= datetime.datetime.utcnow():
+            raise jwt.ExpiredSignatureError('El token ha expirado')
+    return payload
