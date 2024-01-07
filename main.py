@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from routes.v1 import register, login
+from routes.v1.belvo import user_list
 import os
 
 app = FastAPI(
@@ -10,6 +12,10 @@ app = FastAPI(
 )
 
 version = "/v1"
+app.include_router(login.router, prefix=version, tags=["login"])
+app.include_router(register.router, prefix=version, tags=["register"])
+app.include_router(user_list.router, prefix=version, tags=["belvo"])
+
 
 if __name__ == "__main__":
     import uvicorn
