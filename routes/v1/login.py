@@ -12,7 +12,7 @@ from config import tokens
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("/login")
 def login(user: Annotated[OAuth2PasswordRequestForm, Depends()]):
     try:
         engine = MySQLDBSingleton().get_database()
