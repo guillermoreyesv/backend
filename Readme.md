@@ -3,6 +3,13 @@
 ## Description
 This project is a technical test for Finvero created by Guillermo Reyes.
 
+## Used libaries
+- FastAPI 0.108.0
+- uvicorn 0.25.0
+- PyJWT 2.8.0
+- SQLAlchemy 2.0.25
+- requests 2.31.0
+
 ## Endpoints
 
 ### 1. /v1/login
@@ -97,26 +104,26 @@ BELVO_TOKEN = [TOKEN_SANDBOX]
 ```
 
 ## Project Structure
+### /
+- .gitignore
+- docker-compose.yml (Includes Python + MySQL containers)
+- Dockerfile
+- main.py (FastAPI)
+- requirements.txt
 
-### config
+### /config/
 - belvo.py (Integration with BELVO API)
 - mysql.py (Singleton connection with the database)
-- passwords.py (Password encryption [encode, decode])
-- tokens (PyJWT [encode, decode])
+- passwords.py (Password encryption)
+- tokens (PyJWT)
 
-### models
-- users_roles (MySQL table)
-- users (MySQL table)
+### /models/
+- users_roles
+- users
 
-### routes/v1
+### /routes/v1/
 - login.py (Endpoint to obtain JWT token [email, password])
 - register.py (Endpoint to add more users, requires Bearer token)
 
-### routes/v1/belvo
+### /routes/v1/belvo/
 - user_list.py (Endpoint to get a list of users from BELVO, requires Bearer token)
-
-### .gitignore
-### docker-compose.yml (Includes Python + MySQL containers)
-### Dockerfile
-### main.py (FastAPI)
-### requirements.txt
