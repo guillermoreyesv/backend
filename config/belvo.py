@@ -6,6 +6,7 @@ class BelvoManager():
     token: str = os.getenv('BELVO_TOKEN','ZDQ0ZTZkYTQtZDdhOS00OThmLWI3MWMtMzA3YTQ1NDY4NmJjOnlSMWdXMWVvR2N3RXFWeDkqI2FEUjVibVE2RUNXVVo1RmhkMyNtZm9jQWJoMzkjbl9ud2hhdDA2TkBHVlZAI3Y=')
     
     def get_users(self, page:int = 1):
+        #Cuentas
         url = f"{self.url_base}/api/owners/?page={page}"
         headers = {
             'Authorization': f'Basic {self.token}'
@@ -14,9 +15,10 @@ class BelvoManager():
         return response.json()
     
     def get_transactions(self, page:int = 1, user:str = ""):
+        #Transacciones vinculadas a un usuario
         url = f"{self.url_base}/api/transactions/?page={page}&link={user}"
         headers = {
             'Authorization': f'Basic {self.token}'
         }
         response = request("GET", url, headers=headers)
-        return response.json()
+        return response
