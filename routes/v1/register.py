@@ -19,7 +19,7 @@ class UserAPI(BaseModel):
     lastname: str
     role_id: int
 
-@router.post("/")
+@router.post("/register")
 def register_new_user(user: UserAPI, token: Annotated[str, Depends(oauth2_scheme)]):
     user_info = {}
     try:
