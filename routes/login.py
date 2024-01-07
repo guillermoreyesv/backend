@@ -1,31 +1,30 @@
-from fastapi import APIRouter, status
+from typing import Annotated
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 
-from models.user import User
+from models.users import Users
 from config.mysql import MySQLDBSingleton
 from config.passwords import PasswordManager
 from config import tokens
 
 router = APIRouter()
-class UserAPI(BaseModel):
-    email: EmailStr
-    password: str
 
 @router.post("/")
-def login(user: UserAPI):
+def login(user: Annotated[OAuth2PasswordRequestForm, Depends()]):
     try:
         engine = MySQLDBSingleton().get_database()
         with Session(engine) as session:
-            result = User.user_exists(session, user.email)
+            result = Users.user_exists(session, user.username)
             if not result:
-                response = {'message': f'user {user.email} not found'}
+                response = {'message': f'user {user.username} not found'}
                 return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=response)
             
             verify = PasswordManager().verify_password(plain_password=user.password, hashed_password=result.password)
             if not verify:
-                response = {'message':f"User {str(login.email)} not found"}
+                response = {'message':f"User {str(login.username)} not found"}
                 return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=response)
             
             payload = {
@@ -34,7 +33,7 @@ def login(user: UserAPI):
             session.commit()
 
             token = tokens.encode(payload)
-            response = {"token": token}
+            response = {"access_token": token, "token_type": "bearer"}
             return JSONResponse(status_code=status.HTTP_200_OK, content=response)
             
     except Exception as e:
