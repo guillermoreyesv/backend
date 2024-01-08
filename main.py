@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routes.v1 import register, login
-from routes.v1.belvo import user_list, user_transactions, user_group_transactions, user_financial_health
+from routes.v1.belvo import user_list, user_transactions, user_group_transactions
+from routes.v1.belvo import user_financial_health, user_financial_income_expenses
 import os
 
 app = FastAPI(
@@ -18,6 +19,7 @@ app.include_router(user_list.router, prefix=version, tags=["belvo"])
 app.include_router(user_transactions.router, prefix=version, tags=["belvo"])
 app.include_router(user_group_transactions.router, prefix=version, tags=["belvo"])
 app.include_router(user_financial_health.router, prefix=version, tags=["belvo"])
+app.include_router(user_financial_income_expenses.router, prefix=version, tags=["belvo"])
 
 
 if __name__ == "__main__":
