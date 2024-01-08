@@ -5,9 +5,12 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 
 from models.users_roles import UsersRoles
+from models.belvo_endpoints import BelvoEndpoints
+
 from config.mysql import MySQLDBSingleton
 from config import tokens
 from config.belvo import BelvoManager
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/login")
@@ -33,7 +36,36 @@ def user_transactions(page: Annotated[int, 1], user: Annotated[str, ""], token: 
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=response)
             
             #CONSUMO BELVO
-            response_belvo = BelvoManager().get_transactions(page, user)
+            # BUSCAMOS EN LA BD:
+            response_belvo = BelvoManager().get_transactions(page, user, True)
+            method = response_belvo['method']
+            params = response_belvo['params']
+            params_dict = response_belvo['params_dict']
+            url = response_belvo['url']
+            full_url = url + params
+            code = '200'
+            local_results = BelvoEndpoints.find_endpoint_today(session, method, full_url, code)
+
+            if local_results:
+                response_belvo = local_results.response
+            else:
+                # SI NO ESTA EN LA BD, OBTENEMOS Y ACTUALIZAMOS.
+                response_belvo = BelvoManager().get_transactions(page, user, False)
+                response_belvo_json = response_belvo.json()
+
+                # UPDATE DB
+                new_belvo_endpoint = BelvoEndpoints(
+                    type = method,
+                    url = url,
+                    params = params_dict,
+                    code = response_belvo.status_code,
+                    full_url = full_url,
+                    response = response_belvo_json
+                )
+                session.add(new_belvo_endpoint)
+                session.commit()
+                response_belvo = response_belvo_json
+
             session.commit()
             response = {"message": "ok", "results":response_belvo}
             return JSONResponse(status_code=status.HTTP_200_OK, content=response)
