@@ -3,8 +3,6 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 from sqlalchemy.orm import Session
-import math
-
 
 from models.users_roles import UsersRoles
 from config.mysql import MySQLDBSingleton
@@ -15,8 +13,8 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/login")
 
 
-@router.get("/user_group_transactions")
-def user_transactions(page: Annotated[int, 1], user: Annotated[str, ""], token: Annotated[str, Depends(oauth2_scheme)]):
+@router.get("/user_financial_health")
+def user_financial_health(page: Annotated[int, 1], user: Annotated[str, ""], token: Annotated[str, Depends(oauth2_scheme)]):
     user_info = {}
     try:
         #Validamos token
@@ -37,13 +35,12 @@ def user_transactions(page: Annotated[int, 1], user: Annotated[str, ""], token: 
             #CONSUMO BELVO
             response_belvo = BelvoManager().get_transactions(page, user, session)
             
-            categories = {}
             page_transactions = len(response_belvo['results'])
 
             # Find total pages
             if response_belvo['next']:
                 # Normal page
-                pages = math.ceil( int(response_belvo['count']) / page_transactions )
+                pages = round( int(response_belvo['count']) / page_transactions )
             else:
                 # Last page
                 previous = str(response_belvo['previous'])
@@ -51,20 +48,36 @@ def user_transactions(page: Annotated[int, 1], user: Annotated[str, ""], token: 
                 pages = previous[index:len(previous)]
                 pages = int(pages.replace("page=","")) + 1
             
+            inflow = 0
+            outflow = 0
+            details = {}
             for result in response_belvo['results']:
-                title = result['category']
-                if title in categories:
-                    categories[title].append(result)
-                else:
-                    categories[title] = [result]
+                title = result['type']
+                if title == 'INFLOW':
+                    inflow += result['amount']
+                elif title == 'OUTFLOW':
+                    outflow += result['amount']
 
-            total_categories = len(categories)
+                if title in details:
+                    details[title].append(result)
+                else:
+                    details[title] = [result]
+
+            total_details = len(details)
+            subtotal = inflow - outflow
+            health = True if subtotal > 0 else False
             results = {
                 "pages": pages,
                 "total_transactions": response_belvo['count'],
                 "page_transactions": page_transactions,
-                "total_categories": total_categories,
-                "categories": categories
+                "total_categories": total_details,
+                "transactions_info": {
+                    "INFLOW": inflow,
+                    "OUTFLOW": outflow,
+                    "subtotal": subtotal,
+                    "Health": health,
+                },
+                "details": details
             }
 
             session.commit()
