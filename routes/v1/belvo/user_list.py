@@ -33,7 +33,7 @@ def user_list(page: Annotated[int, 1], token: Annotated[str, Depends(oauth2_sche
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=response)
             
             #CONSUMO BELVO
-            response_belvo = BelvoManager().get_users(page)
+            response_belvo = BelvoManager().get_users(page).json()
             session.commit()
             response = {"message": "ok", "results":response_belvo}
             return JSONResponse(status_code=status.HTTP_200_OK, content=response)

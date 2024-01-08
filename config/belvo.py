@@ -12,13 +12,20 @@ class BelvoManager():
             'Authorization': f'Basic {self.token}'
         }
         response = request("GET", url, headers=headers)
-        return response.json()
+        return response
     
-    def get_transactions(self, page:int = 1, user:str = ""):
-        #Transacciones vinculadas a un usuario
-        url = f"{self.url_base}/api/transactions/?page={page}&link={user}"
+    def get_transactions(self, page:int = 1, user:str = "", info:bool = False):
+        method = 'GET'
+        url = f"{self.url_base}/api/transactions/"
+        params = f"?page={page}&link={user}"
+        params_dict = {"page": page, "link": user}
         headers = {
             'Authorization': f'Basic {self.token}'
         }
-        response = request("GET", url, headers=headers)
-        return response
+
+        if info:
+            return {"method": method, "url": url,"params":params, "params_dict":params_dict}
+        else:
+            #Transacciones vinculadas a un usuario
+            response = request(method, url+params, headers=headers)
+            return response
