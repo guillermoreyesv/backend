@@ -10,6 +10,86 @@ This project is a technical test for Finvero created by Guillermo Reyes.
 - SQLAlchemy 2.0.25
 - requests 2.31.0
 
+## Deploy info
+### 1. Install Virtual Environment
+This command installs virtualenv, a tool to create isolated Python environments.
+```
+pip install virtualenv
+```
+
+### 2. Create Virtual Environment
+Creates a new virtual environment named venv using Python 3. This environment will isolate dependencies for your project.
+```
+python3 -m venv venv
+```
+
+### 2.5 Pip freeze
+Create a requirements.txt only with local libraries.
+```
+pip freeze --local > requirements.txt
+```
+
+### 3. Set Environment Variables
+The basic syntax to define an environment variable is as follows:
+```
+export DOCS_URL=/docs
+export REDOC_URL=/redoc
+
+export MYSQL_USER=admin
+export MYSQL_PASS=password
+export MYSQL_HOST=localhost
+export MYSQL_PORT=3306
+export DB_NAME=finvero
+export DB_POOL_RECYCLE=3600
+export DB_ECHO=False
+
+export SECRET_KEY=develop
+export ALGORITHM=HS256
+export EXPIRE=60
+
+export BELVO_URL_BASE=https://sandbox.belvo.com
+export BELVO_TOKEN=[TOKEN_SANDBOX]
+```
+
+### 4. Install Dependencies
+Installs project dependencies listed in the requirements.txt file. The --no-cache-dir flag prevents the use of cached packages.
+```
+pip install --no-cache-dir -r requirements.txt
+```
+
+### 5. Run FastAPI using Uvicorn
+Starts the FastAPI application using Uvicorn. The --reload flag enables auto-reloading on code changes, and the --port 8001 specifies the port number.
+```
+uvicorn main:app --reload --port 8001
+```
+
+### 6. Build Docker Image
+Builds a Docker image for the project and tags it as back-finverio.
+```
+docker build -t back-finverio .
+```
+
+### 7. Run Docker Container
+Runs a Docker container in detached mode (-d), maps port 8001 on the host to port 8000 in the container, and names the container back-finverio.
+```
+docker run -d -p 8001:8000 --name back-finverio back-finverio
+```
+
+### 8. Run Docker Compose
+Uses Docker Compose to start services defined in the docker-compose.yml file in detached mode (-d).
+```
+docker-compose up -d
+```
+
+### 9. URL to use
+
+BaseAPI
+http://0.0.0.0:8001/
+
+Documentation (Swagger)
+http://0.0.0.0:8001/docs
+
+
 ## Endpoints
 
 ### 1. /v1/login
@@ -71,6 +151,58 @@ This project is a technical test for Finvero created by Guillermo Reyes.
     --header 'Authorization: Bearer [TOKEN]'
     ```
 
+### 4. /v1/user_transactions
+- Description: Endpoint to get a list of user transactions.
+- Method: GET
+- Requires a valid JWT token as a Bearer token in the Authorization header and an adecuated role (admin)..
+- Response:
+  - Returns a list of transactions.
+- cURL
+    ```
+    curl --location 'http://localhost:8001/v1/user_transactions?page=[page_number]&user=[user_id]' \
+    --header 'accept: application/json' \
+    --header 'Authorization: Bearer [TOKEN]'
+    ```
+
+### 5. /v1/user_group_transactions
+- Description: Endpoint to get a list of user transactions grouped by categories.
+- Method: GET
+- Requires a valid JWT token as a Bearer token in the Authorization header and an adecuated role (admin)..
+- Response:
+  - Returns a list of transactions.
+- cURL
+    ```
+    curl --location 'http://localhost:8001/v1/user_group_transactions?page=[page_number]&user=[user_id]' \
+    --header 'accept: application/json' \
+    --header 'Authorization: Bearer [TOKEN]'
+    ```
+
+### 6. /v1/user_financial_health
+- Description: Endpoint to obtain information about the user's financial health.
+- Method: GET
+- Requires a valid JWT token as a Bearer token in the Authorization header and an adecuated role (admin)..
+- Response:
+  - Returns a list of transactions.
+- cURL
+    ```
+    curl --location 'http://localhost:8001/v1/user_financial_health?page=[page_number]&user=[user_id]' \
+    --header 'accept: application/json' \
+    --header 'Authorization: Bearer [TOKEN]'
+    ```
+
+### 7. /v1/user_income_expenses
+- Description: Endpoint to obtain information about the income and expenses of each account.
+- Method: GET
+- Requires a valid JWT token as a Bearer token in the Authorization header and an adecuated role (admin)..
+- Response:
+  - Returns a list of transactions.
+- cURL
+    ```
+    curl --location 'http://localhost:8001/v1/user_income_expenses?page=[page_number]&user=[user_id]' \
+    --header 'accept: application/json' \
+    --header 'Authorization: Bearer [TOKEN]'
+    ```
+
 ## Default Environment Variables
 
 ### FASTAPI DOCS
@@ -118,12 +250,17 @@ BELVO_TOKEN = [TOKEN_SANDBOX]
 - tokens (PyJWT)
 
 ### /models/
-- users_roles
-- users
+- belvo_endpoints.py
+- users_roles.py
+- users.py
 
 ### /routes/v1/
 - login.py (Endpoint to obtain JWT token [email, password])
 - register.py (Endpoint to add more users, requires Bearer token)
 
-### /routes/v1/belvo/
-- user_list.py (Endpoint to get a list of users from BELVO, requires Bearer token)
+### /routes/v1/belvo/ (requires Bearer token)
+- user_list.py (Endpoint to get a list of users from BELVO)
+- user_transactions.py (Endpoint to get a list from transactions)
+- user_group_transactions.py (Endpoint to get transactions grouped)
+- user_financial_health.py (Endpoint to get information about user's financial health)
+- user_financial_income_expenses.py (Endpoint to get information about incomes and expenses)

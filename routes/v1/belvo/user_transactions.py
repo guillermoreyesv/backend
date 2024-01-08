@@ -5,16 +5,19 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 
 from models.users_roles import UsersRoles
+from models.belvo_endpoints import BelvoEndpoints
+
 from config.mysql import MySQLDBSingleton
 from config import tokens
 from config.belvo import BelvoManager
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/login")
 
 
-@router.get("/user_list")
-def user_list(page: Annotated[int, 1], token: Annotated[str, Depends(oauth2_scheme)]):
+@router.get("/user_transactions")
+def user_transactions(page: Annotated[int, 1], user: Annotated[str, ""], token: Annotated[str, Depends(oauth2_scheme)]):
     user_info = {}
     try:
         #Validamos token
@@ -33,8 +36,8 @@ def user_list(page: Annotated[int, 1], token: Annotated[str, Depends(oauth2_sche
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content=response)
             
             #CONSUMO BELVO
-            response_belvo = BelvoManager().get_users(page, session)
-            session.commit()
+            response_belvo = BelvoManager().get_transactions(page, user, session)
+            
             response = {"message": "ok", "results":response_belvo}
             return JSONResponse(status_code=status.HTTP_200_OK, content=response)
         

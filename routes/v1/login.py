@@ -18,12 +18,12 @@ def login(user: Annotated[OAuth2PasswordRequestForm, Depends()]):
         with Session(engine) as session:
             result = Users.user_exists(session, user.username)
             if not result:
-                response = {'message': f'user {user.username} not found'}
+                response = {'message': f'User {user.username} not found'}
                 return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=response)
             
             verify = PasswordManager().verify_password(plain_password=user.password, hashed_password=result.password)
             if not verify:
-                response = {'message':f"User {str(login.username)} not found"}
+                response = {'message':f"User {str(user.username)} not found"}
                 return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content=response)
             
             payload = {
