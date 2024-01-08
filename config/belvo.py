@@ -7,14 +7,20 @@ class BelvoManager():
     url_base: str = os.getenv('BELVO_URL_BASE', 'https://sandbox.belvo.com') 
     token: str = os.getenv('BELVO_TOKEN','ZDQ0ZTZkYTQtZDdhOS00OThmLWI3MWMtMzA3YTQ1NDY4NmJjOnlSMWdXMWVvR2N3RXFWeDkqI2FEUjVibVE2RUNXVVo1RmhkMyNtZm9jQWJoMzkjbl9ud2hhdDA2TkBHVlZAI3Y=')
     
-    def get_users(self, page:int = 1):
+    def get_users(self, page:int = 1, session=None):
         #Cuentas
-        url = f"{self.url_base}/api/owners/?page={page}"
+        method = 'GET'
+        url = f"{self.url_base}/api/owners/"
         headers = {
             'Authorization': f'Basic {self.token}'
         }
-        response = request("GET", url, headers=headers)
-        return response
+
+        params = f"?page={page}"
+        params_dict = {"page": page}
+
+        code = 200
+
+        return self.cache_manager(session, method, url, params, params_dict, headers, code)
     
     def get_transactions(self, page:int = 1, user:str = "", session=None):
         # REQUEST INFO
@@ -27,18 +33,24 @@ class BelvoManager():
         params = f"?page={page}&link={user}"
         params_dict = {"page": page, "link": user}
         
-        full_url = url + params
         code = 200
 
-        # LOCAL INFO (BD)
+        return self.cache_manager(session, method, url, params, params_dict, headers, code)
+
+    def cache_manager(self, session, method, url, params, params_dict, headers, code):
+        full_url = url + params
+
+         # LOCAL INFO (BD)
         local_results = BelvoEndpoints.find_endpoint_today(session, method, full_url, code)
         
         if local_results:
-                response_belvo = local_results.response
-                return response_belvo
+            #print('cached')
+            response_belvo = local_results.response
+            return response_belvo
 
         else:
             # NOT FIND LOCAL INFO, REQUESTING NEW INFO.
+            #print('updating', method, full_url, headers)
             response_belvo = request(method, full_url, headers=headers)
             response_belvo_json = response_belvo.json()
 
@@ -55,5 +67,3 @@ class BelvoManager():
             session.commit()
 
             return response_belvo_json
-
-        
